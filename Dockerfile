@@ -1,20 +1,12 @@
 FROM eclipse-temurin:21.0.3_9-jdk
 
-WORKDIR /root
+WORKDIR /app
 
-COPY ./pom.xml /root
-COPY ./.mvn /root/.mvn
-COPY ./mvnw /root
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw && ./mvnw dependency:go-offline
 
-# ✅ Dar permisos de ejecución
-RUN chmod +x ./mvnw
+COPY src/ src
+RUN ./mvnw clean package -DskipTests
 
-# Descargar las dependencias
-RUN ./mvnw dependency:go-offline
-
-COPY ./src /root/src
-
-RUN ./mvnw clean install -DskipTests
-
-# Levantar nuestra app cuando el contenedor inicie
-ENTRYPOINT ["java","-jar","/root/target/demo-jwt-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "target/demo-jwt-0.0.1-SNAPSHOT.jar"]
